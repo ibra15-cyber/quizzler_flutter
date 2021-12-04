@@ -1,8 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-//TODO: Step 2 - Import the rFlutter_Alert package here.
 import 'quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
-QuizBrain quizBrain = QuizBrain();
+//class object
+QuizBrain quizBrain = new QuizBrain();
+
+int totalScore = 0;
+String totalScoreS;
 
 void main() => runApp(Quizzler());
 
@@ -12,6 +17,13 @@ class Quizzler extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.grey.shade900,
+        appBar: AppBar(
+          title: Center(
+            child: Text(
+              "Welcome to Quizler"
+            ),
+          )
+        ),
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -24,36 +36,63 @@ class Quizzler extends StatelessWidget {
 }
 
 class QuizPage extends StatefulWidget {
+  // const QuizPage({Key? key}) : super(key: key);
   @override
   _QuizPageState createState() => _QuizPageState();
 }
 
 class _QuizPageState extends State<QuizPage> {
+  //making a list for our scoreKeeper
+  //we will call scoreKeeper and for each press one of x or check will display
   List<Icon> scoreKeeper = [];
 
   void checkAnswer(bool userPickedAnswer) {
-    bool correctAnswer = quizBrain.getCorrectAnswer();
+    //get the answer with the question
+    bool correctAnswer = quizBrain.getQuestionAnswer();
+    //if that answer is equal to what we will pe passing as argument
 
+    //and after every question go to the next
     setState(() {
-      //TODO: Step 4 - Use IF/ELSE to check if we've reached the end of the quiz. If true, execute Part A, B, C, D.
-      //TODO: Step 4 Part A - show an alert using rFlutter_alert (remember to read the docs for the package!)
-      //HINT! Step 4 Part B is in the quiz_brain.dart
-      //TODO: Step 4 Part C - reset the questionNumber,
-      //TODO: Step 4 Part D - empty out the scoreKeeper.
+      //whenever we got the right answer
+      //flash either a green check icon or a red cross icon
+      if (quizBrain.isFinished() == true) {
+        Alert(
+          context: context,
+          title: "Finished!\nYou've reached the end of the quiz\nYour final score is: ",
+          desc: totalScoreS,
+        ).show();
 
-      //TODO: Step 5 - If we've not reached the end, ELSE do the answer checking steps below 👇
-      if (userPickedAnswer == correctAnswer) {
-        scoreKeeper.add(Icon(
-          Icons.check,
-          color: Colors.green,
-        ));
+        //go back to question 1
+        quizBrain.reset();
+        totalScore = 0;
+
+        //empty the scoreKeeper list which displays check or close when we
+        //got an answer right or wrong.
+        scoreKeeper = [];
       } else {
-        scoreKeeper.add(Icon(
-          Icons.close,
-          color: Colors.red,
-        ));
+        //after pressing, we want our question number to increment
+        //that's to say go to the next question, which will affect the question
+        //number displayed in our text. because the index will have changed
+        quizBrain.nextQuestion();
+        if (userPickedAnswer == correctAnswer) {
+          totalScore ++;
+          totalScoreS = totalScore.toString();
+          scoreKeeper.add(
+            Icon(
+              Icons.check,
+              color: Colors.green,
+            ),
+          );
+        } else {
+          scoreKeeper.add(
+            Icon(
+              Icons.close,
+              color: Colors.red,
+            ),
+          );
+        }
+
       }
-      quizBrain.nextQuestion();
     });
   }
 
@@ -64,57 +103,90 @@ class _QuizPageState extends State<QuizPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Expanded(
-          flex: 5,
-          child: Padding(
-            padding: EdgeInsets.all(10.0),
+          child: Center(
+            child: Text(
+              "Use the buttons below to select the right answer",
+              style: TextStyle(
+                fontSize: 20.0,
+                color: Colors.white,
+              )
+            ),
+          )
+        ),
+
+        Expanded(
+          child: Card(
+            color: Colors.teal,
             child: Center(
               child: Text(
-                quizBrain.getQuestionText(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 25.0,
-                  color: Colors.white,
-                ),
+                "Your Score is:  $totalScore",
               ),
-            ),
+            )
+          )
+        ),
+        Expanded(
+          flex: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+                child: Text(
+              //replacing our text with our question which is string
+              //and has passing question number which will begin at index 0
+              //our code has gotten complicated
+              //it has gone through modification
+              //1. our list of question and list of answers were integrated into one list
+              //this list takes class question List<Question> hence we passed it question obj
+              //this list takes para string for text and bool for answers
+              //then it got abstracted by making it a class
+              //now calling our list was turned private so us to use a method to access private members
+              //and now we are calling it through our accessors instead of directly
+              //our questionNumber too was made private hence we cant see it from here
+              //but these methods from class obj quizBrain have access and used it in the code
+
+              quizBrain.getQuestionText(),
+
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            )),
           ),
         ),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.all(15.0),
+            padding: const EdgeInsets.all(15.0),
             child: FlatButton(
-              textColor: Colors.white,
               color: Colors.green,
-              child: Text(
-                'True',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                ),
-              ),
               onPressed: () {
-                //The user picked true.
+                //in order to be able to display the current question num
+                //we print our question number
+                // print(questionNumber);
                 checkAnswer(true);
               },
+              child: Text(
+                "True",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.0,
+                ),
+              ),
             ),
           ),
         ),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.all(15.0),
+            padding: const EdgeInsets.all(15.0),
             child: FlatButton(
               color: Colors.red,
-              child: Text(
-                'False',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.white,
-                ),
-              ),
               onPressed: () {
-                //The user picked false.
                 checkAnswer(false);
               },
+              child: Text(
+                "false",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.0,
+                ),
+              ),
             ),
           ),
         ),
@@ -125,9 +197,3 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 }
-
-/*
-question1: 'You can lead a cow down stairs but not up stairs.', false,
-question2: 'Approximately one quarter of human bones are in the feet.', true,
-question3: 'A slug\'s blood is green.', true,
-*/
